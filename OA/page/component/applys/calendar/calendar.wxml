@@ -1,0 +1,17 @@
+<view class="container">
+  <!-- 显示年份 -->
+  <view calss="">{{year}}</view>
+
+  <!-- 遍历显示月份1-12个月 -->
+  <!-- 显示星期、日历 -->
+  <view class="calendar">
+    <!-- 星期 -->
+    <!-- 日历 -->
+    <view class="calendar_body">
+      <view wx:for="{{resultList}}">
+        <view>{{item.month}}</view>
+        <view>{{}}</view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,17 @@
+<view class="main">
+    <view class="header">
+        <image src="{{thumb}}" class="thumb"></image>
+        <text class="nickname">{{nickname}}</text>
+    </view>
+    <view class="address-box">
+        <view class="address-manage">
+            <navigator url="/page/component/user/set/info">设置</navigator>
+        </view>
+    </view>
+    <view class="orders-box">
+        <view class="orders">我的流程</view>
+        <view class="" wx:for="{{}}" wx:key="index">
+            <view class="">流程编号：{{item.number}}</view>
+        </view>
+    </view>
+</view>
