@@ -1,107 +1,154 @@
-Page({
 
-  /**
-   * 页面的初始数据
-   */
+let chooseYear = null;
+let chooseMonth = null;
+const conf = {
   data: {
-    year: null,
-    resultList: []
+    hasEmptyGrid: false,
+    showPicker: false
   },
+  onLoad() {
+    const date = new Date();
+    const curYear = date.getFullYear();
+    const curMonth = date.getMonth() + 1;
+    const weeksCh = ['日', '一', '二', '三', '四', '五', '六'];
+    this.calculateEmptyGrids(curYear, curMonth);
+    this.calculateDays(curYear, curMonth);
+    this.setData({
+      curYear,
+      curMonth,
+      weeksCh
+    });
+  },
+  getThisMonthDays(year, month) {
+    return new Date(year, month, 0).getDate();
+  },
+  getFirstDayOfWeek(year, month) {
+    return new Date(Date.UTC(year, month - 1, 1)).getDay();
+  },
+  calculateEmptyGrids(year, month) {
+    const firstDayOfWeek = this.getFirstDayOfWeek(year, month);
+    let empytGrids = [];
+    if (firstDayOfWeek > 0) {
+      for (let i = 0; i < firstDayOfWeek; i++) {
+        empytGrids.push(i);
+      }
+      this.setData({
+        hasEmptyGrid: true,
+        empytGrids
+      });
+    } else {
+      this.setData({
+        hasEmptyGrid: false,
+        empytGrids: []
+      });
+    }
+  },
+  calculateDays(year, month) {
+    let days = [];
 
-  /**
-   * 生命周期函数--监听页面加载
-   */
-  onLoad: function (options) {
-    var that = this;
-    var year = that.thisYear();
-    that.setData({
-      year: year
-    })
-    that.draw_calendar();
-  },
-  // 获取当前年份
-  thisYear: function () {
-    var date = new Date;
-    var year = date.getFullYear();
-    console.log(year);
-    return year;
-  },
-  draw_calendar: function () {
-    var that = this;
-    var year = that.data.year;
-    for (var i = 0; i < 12; i++) {
-      var thisMonth=i+1;
-      var thisList=that.draw_calendar_month(year,thisMonth);
-      var listObj={};
-      listObj.month = thisMonth;
-      listObj.list = thisList;
-      //console.log(listObj);
-      that.data.resultList.push(listObj);
+    const thisMonthDays = this.getThisMonthDays(year, month);
+
+    for (let i = 1; i <= thisMonthDays; i++) {
+      days.push({
+        day: i,
+        choosed: false
+      });
     }
-    console.log(that.data.resultList);
+
+    this.setData({
+      days
+    });
   },
-  draw_calendar_month: function (year,thisMonth) {
-    var year = year;//年
-    var month = thisMonth;//月
-    var that = this;
-    var list = [];
-    var d = new Date(year, month - 1, 1, 1, 1, 1);//天数
-    console.log(d);
-    var firstDay = d.getDay();
-    var allDate = new Date(d.getFullYear(), (d.getMonth() + 1), 0).getDate();
-    var y, m, d, ymd;
-    for (var i = 0; i < firstDay; i++) {
-      list.push({
-        ymd: "",
-        date: "",
-        love: false,
-        danger: false,
-        monthly: false,
-        today: false,
-      })
-    }
-    var j = 1;
-    var k = i;
-    for (i; i < allDate + k; i++) {
-      var dd = new Date();
-      y = dd.getFullYear();
-      m = dd.getMonth() + 1;//获取当前月份的日期 ,因为js默认月份从0开始，所以要加一
-      d = dd.getDate();
-      ymd = year + "-" + month + "-" + j;
-      if (year == y && month == m && d == j) {
-        var today = true;
-        that.setData({
-          ymd: ymd
-        })
-      } else {
-        var today = false;
+  handleCalendar(e) {
+    const handle = e.currentTarget.dataset.handle;
+    const curYear = this.data.curYear;
+    const curMonth = this.data.curMonth;
+    if (handle === 'prev') {
+      let newMonth = curMonth - 1;
+      let newYear = curYear;
+      if (newMonth < 1) {
+        newYear = curYear - 1;
+        newMonth = 12;
       }
 
-      var action = wx.getStorageSync(ymd);
-      list.push({
-        ymd: ymd,
-        date: j,
-        love: action == "love" ? true : false,
-        danger: false,
-        monthly: action == "monthly" ? true : false,
-        today: today
-      })
-      j++;
-    }
-    var lastDay = new Date(year, month - 1, allDate, 1, 1, 1).getDay();
-    console.log(lastDay);
-    var k = i;
-    for (i; i < (6 - lastDay + k); i++) {
-      list.push({
-        ymd: "",
-        date: "",
-        love: false,
-        danger: false,
-        monthly: false,
-        today: 0,
-      })
-    }
-    return list;
-  }
+      this.calculateDays(newYear, newMonth);
+      this.calculateEmptyGrids(newYear, newMonth);
 
-})
+      this.setData({
+        curYear: newYear,
+        curMonth: newMonth
+      });
+    } else {
+      let newMonth = curMonth + 1;
+      let newYear = curYear;
+      if (newMonth > 12) {
+        newYear = curYear + 1;
+        newMonth = 1;
+      }
+
+      this.calculateDays(newYear, newMonth);
+      this.calculateEmptyGrids(newYear, newMonth);
+
+      this.setData({
+        curYear: newYear,
+        curMonth: newMonth
+      });
+    }
+  },
+  tapDayItem(e) {
+    const idx = e.currentTarget.dataset.idx;
+    const days = this.data.days;
+    days[idx].choosed = !days[idx].choosed;
+    this.setData({
+      days,
+    });
+  },
+  chooseYearAndMonth() {
+    const curYear = this.data.curYear;
+    const curMonth = this.data.curMonth;
+    let pickerYear = [];
+    let pickerMonth = [];
+    for (let i = 1900; i <= 2100; i++) {
+      pickerYear.push(i);
+    }
+    for (let i = 1; i <= 12; i++) {
+      pickerMonth.push(i);
+    }
+    const idxYear = pickerYear.indexOf(curYear);
+    const idxMonth = pickerMonth.indexOf(curMonth);
+    this.setData({
+      pickerValue: [idxYear, idxMonth],
+      pickerYear,
+      pickerMonth,
+      showPicker: true,
+    });
+  },
+  pickerChange(e) {
+    const val = e.detail.value;
+    chooseYear = this.data.pickerYear[val[0]];
+    chooseMonth = this.data.pickerMonth[val[1]];
+  },
+  tapPickerBtn(e) {
+    const type = e.currentTarget.dataset.type;
+    const o = {
+      showPicker: false,
+    };
+    if (type === 'confirm') {
+      o.curYear = chooseYear;
+      o.curMonth = chooseMonth;
+      this.calculateEmptyGrids(chooseYear, chooseMonth);
+      this.calculateDays(chooseYear, chooseMonth);
+    }
+
+    this.setData(o);
+  },
+  onShareAppMessage() {
+    return {
+      title: '小程序日历',
+      desc: '还是新鲜的日历哟',
+      path: 'pages/index/index'
+    };
+  }
+};
+
+Page(conf);
