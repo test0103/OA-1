@@ -3,7 +3,21 @@ Page({
   data:{
     thumb:'',
     nickname:'',
-    orders:[],
+    process:[
+      {
+        title: "请假申请流程",
+        name: "覃玉凤",
+        time: "2018-05-28",
+        state:"待部门经理审批"
+        
+      },
+      {
+        title: "调休申请流程",
+        name: "覃玉凤",
+        time: "2018-05-30",
+        state: "人事部已确认"
+      }
+    ],
     hasAddress:false,
     address:{}
   },
